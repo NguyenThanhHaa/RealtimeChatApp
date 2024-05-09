@@ -8,7 +8,8 @@ import {v4 as uuidv4} from "uuid";
 import styled from "styled-components";
 import { getAllMessagesRoute, sendMessageRoute } from '../utils/APIRoutes';
 import Tooltip from '@mui/material/Tooltip';
-
+import moment from 'moment'
+import vi from "moment/locale/vi";
 
 //xử lý tin nhắn
 export default function ChatContainer({currentChat,currentUser,socket}) {
@@ -20,8 +21,8 @@ export default function ChatContainer({currentChat,currentUser,socket}) {
     const [showSearch, setShowSearch] = useState(false);
 
     const fetchMessages = async (msg) => {
-        console.log(currentChat)
-        console.log(currentUser);
+        // console.log(currentChat)
+        // console.log(currentUser);
         if(currentChat){
             const response = await axios.post(getAllMessagesRoute, {
                 from: currentUser._id,
@@ -29,6 +30,7 @@ export default function ChatContainer({currentChat,currentUser,socket}) {
                 message: msg,
             });
             setMessages(response.data);
+            console.log(response.data)
         }
     }
 
@@ -36,47 +38,47 @@ export default function ChatContainer({currentChat,currentUser,socket}) {
         fetchMessages();
     }, [currentUser,currentChat]);
 
+    const handleSendMsg = async (msg) => {
+      if (msg.startsWith("<img")) {
+        // Tin nhắn là hình ảnh, gửi tin nhắn qua socket và cập nhật state
+        socket.current.emit("send-msg", {
+          to: currentChat._id,
+          from: currentUser._id,
+          message: msg
+        });
+     // Tin nhắn là hình ảnh, gọi API lưu tin nhắn và sau đó gửi tin nhắn qua socket
+        await axios.post(sendMessageRoute, {
+          from: currentUser._id,
+          to: currentChat._id,
+          message: msg,
+        });
+        const newMessage = { fromSelf: true, message: msg };
+        setMessages(prevMessages => [...prevMessages, newMessage]);
+      } else {
+        try {
+          // Tin nhắn là văn bản, gọi API lưu tin nhắn và sau đó gửi tin nhắn qua socket
+          await axios.post(sendMessageRoute, {
+            from: currentUser._id,
+            to: currentChat._id,
+            message: msg,
 
-const handleSendMsg = async (msg) => {
-  if (msg.startsWith("<img")) {
-    // Tin nhắn là hình ảnh, gửi tin nhắn qua socket và cập nhật state
-    socket.current.emit("send-msg", {
-      to: currentChat._id,
-      from: currentUser._id,
-      message: msg
-    });
- // Tin nhắn là hình ảnh, gọi API lưu tin nhắn và sau đó gửi tin nhắn qua socket
-    await axios.post(sendMessageRoute, {
-      from: currentUser._id,
-      to: currentChat._id,
-      message: msg,
-    });
-    const newMessage = { fromSelf: true, message: msg };
-    setMessages(prevMessages => [...prevMessages, newMessage]);
-  } else {
-    try {
-      // Tin nhắn là văn bản, gọi API lưu tin nhắn và sau đó gửi tin nhắn qua socket
-      await axios.post(sendMessageRoute, {
-        from: currentUser._id,
-        to: currentChat._id,
-        message: msg,
-      });
-
-      socket.current.emit("send-msg", {
-        to: currentChat._id,
-        from: currentUser._id,
-        message: msg,
-      });
-
-      const newMessage = { fromSelf: true, message: msg };
-      setMessages(prevMessages => [...prevMessages, newMessage]);
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
-  }
-};
-
-
+          });
+    
+          socket.current.emit("send-msg", {
+            to: currentChat._id,
+            from: currentUser._id,
+            message: msg,
+          });
+    
+          const newMessage = { fromSelf: true, message: msg };
+          setMessages(prevMessages => [...prevMessages, newMessage]);
+        } catch (error) {
+          console.error("Error sending message:", error);
+        }
+      }
+    };
+    
+    
 
     useEffect (()=>{
         if(socket.current){
@@ -106,6 +108,7 @@ const handleSendMsg = async (msg) => {
     const handleAvatarClick = () => {
       setShowSearch(!showSearch); 
   };
+
 
 
   return (
@@ -155,28 +158,22 @@ const handleSendMsg = async (msg) => {
       {/* Tin nhắn UI */}
       <div className="chat-messages">
 
-        {messages.map((message, index) => {
+        {filteredMessages.map((message,index) => {
           const isImage = message.message.startsWith("<img");
           return (
-            <div ref={index === messages.length - 1 ? scrollRef : null} key={uuidv4()}>
-            <div className={`message ${message.fromSelf ? "sended" : "received"}`}>
-              <div className="content">
-                {isImage ? (
-                  <img src={message.message.match(/src="([^"]+)"/)[1]} alt="Sent Image" />
-                ) : (
-                  <p>{message.message}</p>
-                )}
+            <>
+              <div ref={index === messages.length - 1 ? scrollRef : null} key={uuidv4()}>
               </div>
-            </div>
-          </div>
-        );
-      })}
-
-        {filteredMessages.map((message) => {
-          return (
-            <div className={`message ${message.fromSelf ? 'sended' : 'received'}`}>
+              <div className={`message ${message.fromSelf ? 'sended' : 'received'}`}>
+              
               <div className="content">
-                <p>
+              
+              {isImage ? (
+                  <img src={message.message.match(/src="([^"]+)"/)[1]} alt="Sent Image" />
+                  
+                  
+                ) : (
+                  <p>
                   {message.message
                     .split(new RegExp(`(${searchMess})`, 'gi'))
                     // gi 
@@ -192,12 +189,20 @@ const handleSendMsg = async (msg) => {
                       )
                     )}
                 </p>
-              </div>
-      </div>
-          );
-        })}
 
-        
+                
+                )}
+                {/* <span className="message-time text-gray-400 text-sm">
+                  {moment(message.createdAt).format('HH:mm')}
+                </span> */}
+              </div>
+              
+              
+      </div>
+      
+    </>        
+);
+})}
 
       </div>
       <ChatInput handleSendMsg={handleSendMsg} />
@@ -249,7 +254,7 @@ const Container = styled.div`
     padding: 1rem 2rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
     overflow: auto;
     z-index:1;
     &::-webkit-scrollbar {

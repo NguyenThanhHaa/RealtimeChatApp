@@ -27,7 +27,11 @@ const userSchema = new mongoose.Schema({
     avatarImage: {
         type: String,
         default: ""
-    }
+    },
+    isOnline:{
+        type:Boolean,
+        default:false
+    } 
 })
 
 // mongoose.model("Users", userSchema): Tạo một model trong Mongoose 

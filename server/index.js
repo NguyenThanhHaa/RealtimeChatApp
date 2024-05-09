@@ -11,6 +11,9 @@ const userRoutes = require("./routes/userRoutes")
 
 const messageRoute = require("./routes/messagesRoute")
 const socket = require("socket.io")
+
+
+
 // Tạo một ứng dụng Express để xử lý các yêu cầu HTTP.
 const app  = express();
 
@@ -40,6 +43,7 @@ mongoose.connect(process.env.MONGO_URL, {
 const server = app.listen(process.env.PORT, ()=> {
     console.log(`Server started on PORT : ${process.env.PORT}`)
 })
+
 //Khởi tạo socket.io server
 const io = socket(server,{
     cors:{
@@ -51,9 +55,20 @@ const io = socket(server,{
 global.onlineUsers =new Map();
 io.on("connection",(socket) =>{
     global.chatSocket = socket;
+    
+    // Thêm người dùng vào danh sách online khi họ kết nối
     socket.on("add-user",(userId)=>{
         onlineUsers.set(userId,socket.id);
     });
+
+      // Xóa người dùng khỏi danh sách online khi họ ngắt kết nối
+    //   socket.on("disconnect", () => {
+    //     const userId = Array.from(onlineUsers).find(([key, value]) => value === socket.id)[0];
+    //     if (userId) {
+    //         onlineUsers.delete(userId);
+    //     }
+    // });
+    
 //soket nhận tin nhắn từ máy khách
     socket.on("send-msg",(data)=>{
         const sendUserSocket = onlineUsers.get(data.to);

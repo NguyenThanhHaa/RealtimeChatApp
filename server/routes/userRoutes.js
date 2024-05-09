@@ -1,5 +1,5 @@
 // Đây là một hàm xử lý được import từ file userController, chủ yếu để xử lý logic đăng ký người dùng.
-const { register, login, setAvatar, getAllUsers } = require("../controllers/userController")
+const { register, login, setAvatar, getAllUsers, setOnline, setOffline } = require("../controllers/userController")
 
 // router: Đây là một đối tượng router từ Express, được sử dụng để xử lý các định tuyến (routes).
 const router = require("express").Router()
@@ -10,6 +10,8 @@ router.post("/register", register)
 router.post("/login", login)
 router.post("/setAvatar/:id", setAvatar)
 router.get("/allusers/:id",getAllUsers)
+router.post("/updateOnline/:id",setOnline)
+router.post("/updateOffline/:id",setOffline)
 
 
 // Xuất đối tượng router để có thể sử dụng nó ở nơi khác trong ứng dụng.

@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import Logo from "../assets/logo.svg";
-import { RxHamburgerMenu } from "react-icons/rx";
-import SideBar from "./SideBar";
 import LogOut from "./LogOut";
 import Tooltip from '@mui/material/Tooltip';
+import { FaCircle } from "react-icons/fa6";
+import {io} from "socket.io-client"
 
 
 export default function Contacts({ contacts, currentUser, changeChat }) {
+
+
   const [currentUserName, setCurrentUserName] = useState(undefined);
+
+  const [currentOnline, setCurrentOnline] = useState(false);
 
   const [currentUserImage, setCurrentUserImage] = useState(undefined);
 
@@ -15,12 +19,32 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
 
   const [searchKeyword, setSearchKeyword] = useState("");
   
+  const socket = useRef();
+
 
   useEffect(() => {
     if (currentUser) {
       setCurrentUserImage(currentUser.avatarImage);
       setCurrentUserName(currentUser.username);
+      setCurrentOnline(currentUser.isOnline);
+
+    // Connect to Socket.IO server
+    socket.current = io("http://localhost:3000");
+    // Listen for 'isOnline' event from server
+    socket.current.on("isOnline", ({ userId, isOnline }) => {
+      // Update the online status of the user
+      if (userId === currentUser._id) {
+        setCurrentOnline(isOnline);
+      }
+    });
+
+    return () => {
+      // Disconnect Socket.IO when component unmounts
+      if (socket.current) {
+        socket.current.disconnect();
+      }
     }
+  }
   }, [currentUser]);
 
   const changeCurrentChat = (index, contact) => {
@@ -101,7 +125,7 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
                     display: "flex",
                   }}
                 >
-                  <div className="avatar">
+                  <div className=" flex  avatar relative">
                     <img
                       src={`data:image/svg+xml;base64,${contact.avatarImage}`}
                       alt="avatar"
@@ -109,6 +133,13 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
                         height: "3rem",
                       }}
                     />
+                    {contact.isOnline ? (
+                      <FaCircle className="absolute bottom-0 right-0 text-green-400 text-xs" />
+                    ): (
+                      <span className="absolute bottom-0 right-0  text-xs">😴</span>
+                    )}
+    
+
                   </div>
 
                   <div className="username">
@@ -119,8 +150,8 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
             })}
             
           </div>
-          <div className="current-user bg-gray-800 flex justify-center items-center gap-8 py-3 ">
-            <div className="avatar cursor-pointer ">
+          <div className="current-user bg-gray-800 flex justify-start items-center gap-8 py-3 px-4 ">
+            <div className="avatar cursor-pointer relative ">
               <img
                 src={`data:image/svg+xml;base64,${currentUserImage}`}
                 alt="avatar"
@@ -128,10 +159,14 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
                   height: "3rem",
                   maxInlineSize: "100%",
                 }}
+                className=""
               />
+              <FaCircle className="absolute bottom-0 right-0 text-green-400 text-xs" />
+
             </div>
             <div className="username cursor-pointer">
                 <h2 className='text-white'>{currentUserName}</h2>
+                <span className="text-green-400">Đang hoạt động</span>
             </div>
           </div>
         </div>

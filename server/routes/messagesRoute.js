@@ -10,6 +10,5 @@ router.post("/addmsg/", addMessage);
 router.post("/getmsg/", getAllMessage);
 
 
-
 // Xuất đối tượng router để có thể sử dụng nó ở nơi khác trong ứng dụng.
 module.exports = router

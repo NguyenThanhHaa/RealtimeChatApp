@@ -1,5 +1,6 @@
-const User = require("../models/userModel")
+const User = require("../models/userModel.js")
 const brcypt = require("bcrypt")
+
 
 //Định nghĩa hàm xử lý đăng ký với các tham số req (đối tượng yêu cầu), res (đối tượng phản hồi), và next (hàm middleware tiếp theo).
 module.exports.register = async (req, res, next) => {
@@ -41,23 +42,25 @@ module.exports.register = async (req, res, next) => {
 
 module.exports.login = async (req, res, next) => {
     try {
-        const { username, password } = req.body
-        const user = await User.findOne({ username })
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
         const isPasswordValid = await brcypt.compare(password, user.password)
 
         // Sử dụng bcrypt để mã hóa mật khẩu trước khi lưu vào cơ sở dữ liệu.
         // 10: Đây là số vòng lặp của thuật toán băm. 10 chỉ ra số vòng lặp, và giá trị càng cao thì thời gian tính toán càng tăng, làm cho quá trình băm an toàn hơn đối với các cuộc tấn công brute-force.
         const hashedPassword = await brcypt.hash(password, 10)
 
-        if (!user) {
-            return res.json({ msg: "Tài khoản hoặc mật khẩu không đúng!", status: false })
+        if (!user){
+            return res.json({ msg: "Không tìm thấy người dùng", status: false });
         }
+        
         if (!isPasswordValid) {
-            return res.json({ msg: "Tài khoản hoặc mật khẩu không đúng!", status: false })
+            return res.json({ msg: "Mật khẩu không đúng", status: false })
         }
         delete user.password
         return res.json({ status: true, user })
     } catch (ex) {
+        console.error(ex);
         next(ex)
     }
 }
@@ -76,13 +79,44 @@ module.exports.setAvatar = async (req, res, next) => {
     }
 }
 
+
+
+module.exports.setOnline = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        // Sử dụng phương thức findByIdAndUpdate để tìm kiếm và cập nhật người dùng với id tương ứng
+        // Truyền vào một đối tượng cập nhật, trong trường hợp này là { isOnline: true }
+        const userData = await User.findByIdAndUpdate(userId, { isOnline:true}, { new: true });
+        // Trả về dữ liệu của người dùng sau khi cập nhật
+        return res.json({ isOnline: userData.isOnline });
+    } catch (ex) {
+        next(ex);
+    }
+};
+
+module.exports.setOffline = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        // Sử dụng phương thức findByIdAndUpdate để tìm kiếm và cập nhật người dùng với id tương ứng
+        // Truyền vào một đối tượng cập nhật, trong trường hợp này là { isOnline: false}
+        const userData = await User.findByIdAndUpdate(userId, { isOnline:false}, { new: true });
+        // Trả về dữ liệu của người dùng sau khi cập nhật
+        return res.json({ isOnline: userData.isOnline });
+    } catch (ex) {
+        next(ex);
+    }
+};
+
+
+
 module.exports.getAllUsers = async (req, res, next) => {
     try{
         const users = await User.find({_id:{$ne:req.params.id }}).select([
             "email",
             "username",
             "avatarImage",
-            "_id"
+            "_id",
+            "isOnline"
         ]);
         return res.json(users);
     }catch(ex){

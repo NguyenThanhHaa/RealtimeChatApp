@@ -19,8 +19,8 @@ export default function ChatInput({handleSendMsg}) {
     setMsg(message);
     //console.log(emojiObject);
   }
-  //tải hình ảnh từ thiết bị
-  const handleImageSelect = (e) => {
+   //tải hình ảnh từ thiết bị
+   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -48,17 +48,19 @@ export default function ChatInput({handleSendMsg}) {
     }}>
 
     <div className="button-container  items-center text-white">
-      <div className='emoji relative cursor-pointer px-8 text-slate-900'>
-        <BsEmojiSmileFill style={{fontSize:'30px'}} onClick={handleEmojiPickerhideShow}/>
-        {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick} 
-          style={{
-           position: 'absolute',
-           zIndex:'3',
-           top: '-470px',
-           backgroundColor: '#080420',
-           boxShadow: '0 5px 10px rgb(226 232 240)',
-           borderColor: 'rgb(226 232 240)',
-        }} />}
+      <div className='flex justify-center justify-items-center'>
+        <div className='emoji relative cursor-pointer px-2 text-slate-900'>
+          <BsEmojiSmileFill style={{fontSize:'20px'}} onClick={handleEmojiPickerhideShow}/>
+          {showEmojiPicker && <Picker onEmojiClick={handleEmojiClick} 
+            style={{
+            position: 'absolute',
+            zIndex:'3',
+            top: '-470px',
+            backgroundColor: '#080420',
+            boxShadow: '0 5px 10px rgb(226 232 240)',
+            borderColor: 'rgb(226 232 240)',
+          }} />}
+        </div>
         <input
             type="file"
             accept="image/*"
@@ -66,8 +68,10 @@ export default function ChatInput({handleSendMsg}) {
             style={{ display: "none" }}
             ref={fileInputRef}
           />
-          <button onClick={() => fileInputRef.current.click()}><FaFileImage /></button>
+          <button onClick={() => fileInputRef.current.click()}><FaFileImage className="text-slate-900 size-5" /></button>
       </div>
+      
+      
     </div>
 
     <form className="input-container flex items-center gap-6 bg-slate-300" onSubmit={(event) => sendChat(event)}>
@@ -82,7 +86,7 @@ export default function ChatInput({handleSendMsg}) {
           paddingTop:'0.2rem',
           fontSize:'30px'        }}/>
       <button type="submit" className="px-1">
-        <IoMdSend style={{fontSize:'30px'}}/>
+        <IoMdSend style={{fontSize:'25px'}}/>
       </button>
     </form>
  

@@ -1,14 +1,10 @@
 import React from 'react'
 import Cat from '../assets/hi.gif'
-import LogOut from './LogOut'
+
 
 export default function Welcome({currentUser}){
     return(
         <div className='flex flex-col'>
-
-        <div className='flex justify-end px-2 pt-2'>
-            <LogOut/>
-        </div>
         
         <div className='flex flex-col justify-center items-center text-white mt-11 '>
             <img src={Cat} alt='Robot gif' style={{height:'20rem',marginBottom:'20px'}} />

@@ -53,14 +53,14 @@ export default function SetAvatar() {
             console.log(data)
 
             if (data.isSet) {
-                user.isVatarImageSet = true
+                user.isAvatarImageSet = true
                 user.avatarImage = data.image
                 localStorage.setItem("chat-app-user", JSON.stringify(user))
                 navigate('/')
             }
-            else {
-                toast.error("Error setting avatar. Please try again", toastOptions)
-            }
+            // else if(!data.isSet) {
+            //     toast.error("Có lỗi trong việc chọn avatar. Thử lại sau!", toastOptions)
+            // }
         }
     }
 

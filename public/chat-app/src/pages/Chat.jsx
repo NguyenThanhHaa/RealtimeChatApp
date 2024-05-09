@@ -64,7 +64,7 @@ function Chat() {
   return (
     <div 
       className="
-      flex flex-col justify-center gap-4 items-center h-screen w-screen  bg-slate-950 
+      flex flex-col justify-center gap-4 items-center h-screen w-screen  bg-slate-950  
     ">
       <div 
         className="

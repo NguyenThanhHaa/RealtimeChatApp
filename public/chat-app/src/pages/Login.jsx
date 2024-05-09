@@ -1,23 +1,27 @@
 import React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect,useRef } from 'react'
 import styled from 'styled-components'
 import { Link, useNavigate } from 'react-router-dom'
 import Logo from "../assets/logo.svg"
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from 'axios'
-import { loginRoute } from '../utils/APIRoutes'
+import { loginRoute,updateOnline,host } from '../utils/APIRoutes'
 import { IoEyeSharp } from "react-icons/io5";
 import { IoEyeOffSharp } from "react-icons/io5";
 
+
 function Login() {
+
   const [isShowPassword, setIsShowPassword] = useState(false);
+
 
   // Hàm xử lý tính năng hide/unhide password 
   const handleTogglePassword = () => {
     setIsShowPassword(!isShowPassword);
   };
 
+ 
 
   // useNavigate là một hook được cung cấp bởi thư viện react-router-dom để lấy hàm navigate để 
   // thực hiện điều hướng trong ứng dụng React. Khi bạn muốn chuyển đến một trang khác,
@@ -42,20 +46,37 @@ function Login() {
     event.preventDefault()
     if (handleValidation()) {
       // console.log("In validation", loginRoute)
-      const { password, username } = values
+      const { password, username, isOnline} = values
       const { data } = await axios.post(loginRoute, {
         username,
         password,
+        isOnline
       })
+     
+     
       if (data.status === false) {
         toast.error(data.msg, toastOptions)
       }
       if (data.status === true) {
         localStorage.setItem('chat-app-user', JSON.stringify(data.user))
+        const user = await JSON.parse(localStorage.getItem("chat-app-user"))
+        await axios.post(`${updateOnline}/${user._id}`,{
+          isOnline
+        })
+        user.isOnline = true;
+
+       
+        
         navigate("/")
+
       }
+
+     
     }
   }
+
+
+  
 
   const toastOptions = {
     position: 'bottom-right',
@@ -68,6 +89,7 @@ function Login() {
   useEffect(() => {
     if (localStorage.getItem('chat-app-user')) {
       navigate('/')
+
     }
   }, [])
 
@@ -81,6 +103,7 @@ function Login() {
       toast.error("Tài khoản và mật khẩu phải được nhập!", toastOptions)
       return false
     }
+   
     return true
   }
 
